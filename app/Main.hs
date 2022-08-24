@@ -16,18 +16,22 @@ import Data.Map (Map, toList, union, map)
 import Data.List (foldl')
 import Data.Maybe (isJust)
 import qualified Data.Map as Map
-import Control.Parallel.Strategies (parListChunk, rdeepseq, using, rseq, withStrategy)
+import Control.Parallel.Strategies (parListChunk, rdeepseq, using, parList)
+import Data.Time ( getCurrentTime, diffUTCTime )
 
 -- main = putStrLn "Hello World"
 
 main :: IO ()
 main = do
+    start <- getCurrentTime
     words <- lines <$> readFile "words_alpha.txt"
     let wordDetails = toList $ allWordSets words
     let process = processAllWords wordDetails
-    let processInParallel = processAllWords (wordDetails `using` parListChunk 100 rdeepseq)
-    let results = iterate processInParallel (Prelude.map wordsMapPair wordDetails `using` parListChunk 1000 rdeepseq) !! 4
+    let processInParallel = processAllWords (wordDetails `using` parList rdeepseq)
+    let results = iterate processInParallel (Prelude.map wordsMapPair wordDetails `using` parList rdeepseq) !! 4
     print $ length results
+    end <- getCurrentTime
+    print $ diffUTCTime end start
 
 benchmarkWords :: [String]
 benchmarkWords = ["fjord", "gucks", "nymph", "vibex", "waltz"]
