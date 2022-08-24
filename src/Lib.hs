@@ -55,6 +55,7 @@ noRepeatLetters s = isJust $ go s
     where
         go :: [Alpha] -> Maybe Int
         go [] = Just zeroBits
-        go (x:xs) = (\bits -> if isUnique bits charBit then Just $ bits .|. charBit else Nothing) =<< go xs
+        go (x:xs) = maybeCombineBits =<< go xs
             where
+                maybeCombineBits b = if isUnique b charBit then Just $ b .|. charBit else Nothing
                 charBit = alphaToBitSet x
